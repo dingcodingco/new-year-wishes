@@ -20,6 +20,40 @@ export default function Lantern({ wish, onBurn }: LanternProps) {
     }
   }, [wish.burned_at]);
 
+  // 풍등이 날아오를 때 효과음 재생
+  useEffect(() => {
+    if (!wish.burned_at) {
+      const playFloatSound = () => {
+        try {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          // 부드럽게 올라가는 소리
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.4);
+
+          gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+
+          oscillator.start(audioContext.currentTime);
+          oscillator.stop(audioContext.currentTime + 0.6);
+        } catch (error) {
+          // 오디오 컨텍스트 생성 실패 시 무시
+          console.log('Audio playback failed:', error);
+        }
+      };
+
+      // 약간의 딜레이 후 재생 (애니메이션 시작과 함께)
+      const timer = setTimeout(playFloatSound, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [wish.burned_at]);
+
   // 랜덤한 애니메이션 지속 시간 (10-20초)
   const duration = 10 + Math.random() * 10;
 
@@ -34,6 +68,30 @@ export default function Lantern({ wish, onBurn }: LanternProps) {
   // 풍등을 클릭하면 태워짐
   const handleClick = () => {
     if (!wish.burned_at && !isBurning) {
+      // 타는 효과음 재생
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // 타는 소리 (급격하게 높아지다 사라지는 소리)
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + 0.3);
+        oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 1);
+
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 1);
+      } catch (error) {
+        console.log('Audio playback failed:', error);
+      }
+
       setIsBurning(true);
       setTimeout(() => {
         onBurn(wish.id);

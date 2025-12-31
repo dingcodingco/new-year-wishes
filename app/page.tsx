@@ -145,7 +145,7 @@ export default function Home() {
           새해 소원 🏮
         </h1>
         <p className="text-white/70 text-sm md:text-base">
-          2025년 새해, 당신의 소원을 하늘로 날려보세요
+          2026년 새해, 당신의 소원을 하늘로 날려보세요
         </p>
       </div>
 
